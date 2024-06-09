@@ -31,6 +31,12 @@ import MechanicDetailsScreen from './DrawerScreens/ViewMechDetails/ViewDetailMec
 import JobRequestsScreen from './MechanicScreen/MechanicDashboard/MechanicDrawerScreens/JobRequests.js';
 import P2PChat from '../ChatMessaging/P2PChat.js';
 import MechanicChatRoom from './MechanicScreen/MechanicDashboard/MechanicDrawerScreens/MechanicChatRoom.js';
+import SettingsScreen from './DrawerScreens/Settings.js';
+import ChangePasswordScreen from './DrawerScreens/SettingScreens/ChangePassword.js';
+import NotificationSettingsScreen from './DrawerScreens/SettingScreens/Notifications.js';
+import DeleteAccountScreen from './DrawerScreens/SettingScreens/DeleteAccount.js';
+import FAQScreen from './DrawerScreens/FAQsScreen.js';
+import ContactUsScreen from './DrawerScreens/SettingScreens/ContactUsScreen.js';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { faL } from '@fortawesome/free-solid-svg-icons';
@@ -86,6 +92,12 @@ function AppNavigator() {
       <Stack.Screen name="MechComplaint" component={FeedbackForm}/>
       <Stack.Screen name="Chatting" component={P2PChat}/>
       <Stack.Screen name="MechanicChat" component={MechanicChatRoom}/>
+      <Stack.Screen name="UserSettingScreen" component={SettingsScreen}/>
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen}/>
+      <Stack.Screen name="NotificationScreen" component={NotificationSettingsScreen}/>
+      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen}/>
+      <Stack.Screen name="FAQScreen" component={FAQScreen}/>
+      <Stack.Screen name="ContactUs" component={ContactUsScreen}/>
 
 
 

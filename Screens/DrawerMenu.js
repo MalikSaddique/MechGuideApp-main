@@ -132,14 +132,14 @@ const DrawerMenu = (props) => {
       />
       <DrawerItem
         label="FAQs"
-        onPress={() => { /* navigate to mechanic mode */ }}
+        onPress={() => { props.navigation.navigate('FAQScreen') }}
         icon={({ color, size }) => (
           <Icon name="alert-circle-outline" color={color} size={size} />
         )}
       />
       <DrawerItem
         label="Settings"
-        onPress={() => { /* navigate to mechanic mode */ }}
+        onPress={() => { props.navigation.navigate('UserSettingScreen')}}
         icon={({ color, size }) => (
           <Icon name="settings-outline" color={color} size={size} />
         )}

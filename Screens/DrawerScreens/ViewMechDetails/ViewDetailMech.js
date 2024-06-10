@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { auth, db } from "../../../firebase/firebase.config";
-import { collection, getDoc, doc, addDoc, getDocs, query, where,updateDoc } from "firebase/firestore";
+import { collection, getDoc, doc, addDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
+import * as Location from 'expo-location';
+
 const { width } = Dimensions.get('window');
 
 const MechanicDetailsScreen = ({ route, navigation }) => {
@@ -32,9 +34,7 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
         }
     
         // Fetch data from User_Request_of_services collection for current user
-        const requestSnapshot = await getDocs(query(collection(db, "User_Request_of_services"),  where("mechanicId", "==", mechanicId),
-        where("userid", "==", auth.currentUser.uid)
-      ));
+        const requestSnapshot = await getDocs(query(collection(db, "User_Request_of_services"),  where("mechanicId", "==", mechanicId), where("userid", "==", auth.currentUser.uid)));
         const requestData = requestSnapshot.docs.map(doc => doc.data());
         console.log("Request data:", requestData);
 
@@ -54,34 +54,61 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
   // Handle Request
   const handleRequest = async () => {
     try {
-      const docRef = await addDoc(collection(db, "User_Request_of_services"), {
-        name: userData.name, // Corrected access to userData properties
-        email: userData.email,
-        phone: userData.phone,
-        serviceNeed: mechanic.servicesOffered,
-        mechanicId: mechanicId,
-        userid:auth.currentUser.uid,
-        status: "pending",
-        createdAt: new Date().toISOString()
-      });
-  
-      const docId = docRef.id; // Get the ID of the added document
-  
-      // Update the document with its own ID
-      await updateDoc(doc(db, "User_Request_of_services", docId), { id: docId });
-  
-      console.log("Document written with ID: ", docId);
+      let location;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission to access location was denied');
+          return;
+        }
+
+        location = await Location.getCurrentPositionAsync({});
+      } catch (error) {
+        Alert.alert('Error', 'Failed to get your location.');
+        console.error(error);
+        return;
+      }
+
+      const userLocation = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      const requestSnapshot = await getDocs(query(collection(db, "User_Request_of_services"), where("mechanicId", "==", mechanicId), where("userid", "==", auth.currentUser.uid)));
+      
+      if (requestSnapshot.empty) {
+        // No existing request, add a new one
+        const docRef = await addDoc(collection(db, "User_Request_of_services"), {
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          serviceNeed: mechanic.servicesOffered,
+          mechanicId: mechanicId,
+          userid: auth.currentUser.uid,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+          location: userLocation
+        });
+
+        const docId = docRef.id; // Get the ID of the added document
+
+        // Update the document with its own ID
+        await updateDoc(doc(db, "User_Request_of_services", docId), { id: docId });
+
+        console.log("Document written with ID: ", docId);
+      } else {
+        // Existing request, update it with new location
+        const docId = requestSnapshot.docs[0].id;
+        await updateDoc(doc(db, "User_Request_of_services", docId), { location: userLocation });
+
+        console.log("Document updated with ID: ", docId);
+      }
+
       Alert.alert('Your request has been submitted', 'You will be notified soon about request approval!');
     } catch (error) {
       Alert.alert('Error', 'Failed to submit your request.');
       console.error(error);
     }
-  };
-  
-
-  const handleLiveLocation = () => {
-    // Code to handle viewing mechanic's live location
-    // You can implement this according to your requirements
   };
 
   return (
@@ -102,13 +129,13 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
         {services && services.length > 0 && services[0].status === "pending" ? (
           <Text style={styles.pendingInfo}>Your request is sent to the mechanic.</Text>
         ) : services && services.length > 0 && services[0].status === "accepted" ? (
-          <TouchableOpacity style={styles.button} onPress={handleLiveLocation}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ViewMechLoction',{ mechlocation: mechanic.location })}>
             <Text style={styles.buttonText}>Mechanic's Live Location</Text>
           </TouchableOpacity>
         ) : services && services.length > 0 && services[0].status === "rejected" ? (
           <Text style={[styles.info, styles.rejectedText]}>Your request is rejected.</Text>
         ) : (
-          <TouchableOpacity style={styles.button} onPress={handleRequest} >
+          <TouchableOpacity style={styles.button} onPress={handleRequest}>
             <Text style={styles.buttonText}>Request a Service</Text>
           </TouchableOpacity>
         )}
@@ -123,7 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
   },
   header: {
-    marginTop:25,
+    marginTop: 25,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF7A00',
@@ -175,18 +202,15 @@ const styles = StyleSheet.create({
   },
   rejectedText: {
     color: 'red',
-    fontWeight:'bold',
-    textAlign:'center',
-    fontSize:20
-
-    
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 20,
   },
   pendingInfo: {
-    color: 'orange', // or any other color for pending status
-    
-    fontWeight:'bold',
-    textAlign:'center',
-    fontSize:20
+    color: 'orange',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 20,
   },
 });
 

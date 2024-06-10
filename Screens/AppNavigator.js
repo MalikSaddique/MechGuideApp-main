@@ -37,7 +37,7 @@ import NotificationSettingsScreen from './DrawerScreens/SettingScreens/Notificat
 import DeleteAccountScreen from './DrawerScreens/SettingScreens/DeleteAccount.js';
 import FAQScreen from './DrawerScreens/FAQsScreen.js';
 import ContactUsScreen from './DrawerScreens/SettingScreens/ContactUsScreen.js';
-
+import ViewMechLoction from './DrawerScreens/ViewMechDetails/ViewMechLoction.js'
 import { NavigationContainer } from '@react-navigation/native';
 import { faL } from '@fortawesome/free-solid-svg-icons';
 
@@ -100,6 +100,7 @@ function AppNavigator() {
       <Stack.Screen name="ContactUs" component={ContactUsScreen}/>
 
 
+      <Stack.Screen name="ViewMechLoction" component={ViewMechLoction}/>
 
 
     </Stack.Navigator>

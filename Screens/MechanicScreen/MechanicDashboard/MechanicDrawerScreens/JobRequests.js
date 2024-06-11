@@ -90,7 +90,7 @@ const JobRequestsScreen = ({ navigation }) => {
       {item.status === "accepted" ? (
         <>
           <Text style={[styles.status, styles.acceptedStatus]}>You Accept this Request.</Text>
-          <TouchableOpacity style={[styles.button, styles.rejectButton2]} onPress={() => handleReject(item)}>
+          <TouchableOpacity style={[styles.button, styles.rejectButton2]} onPress={() => navigation.navigate('ViewuserLocation',{userLocation:item.location})}>
             <Text style={styles.buttonText}>View the user Location</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.chatButton]} onPress={() => handleChatPress(item)}>

@@ -38,6 +38,7 @@ import DeleteAccountScreen from './DrawerScreens/SettingScreens/DeleteAccount.js
 import FAQScreen from './DrawerScreens/FAQsScreen.js';
 import ContactUsScreen from './DrawerScreens/SettingScreens/ContactUsScreen.js';
 import ViewMechLoction from './DrawerScreens/ViewMechDetails/ViewMechLoction.js'
+import ViewuserLocation from './MechanicScreen/MechanicDashboard/MechanicDrawerScreens/ViewuserLocation.js';
 import { NavigationContainer } from '@react-navigation/native';
 import { faL } from '@fortawesome/free-solid-svg-icons';
 
@@ -101,6 +102,7 @@ function AppNavigator() {
 
 
       <Stack.Screen name="ViewMechLoction" component={ViewMechLoction}/>
+      <Stack.Screen name="ViewuserLocation" component={ViewuserLocation}/>
 
 
     </Stack.Navigator>

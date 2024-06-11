@@ -1,65 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator,Image } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import polyline from '@mapbox/polyline';
 
-const ViewMechLocation = ({ route }) => {
-  const { mechlocation } = route.params;
+const ViewuserLocation = ({ route }) => {
+  const { userLocation } = route.params;
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [region, setRegion] = useState({
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
+  const [region, setRegion] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
-  const [mechanicLocation, setMechanicLocation] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Default mechanic location in case geocoding fails
-  const defaultMechanicLocation = {
+  // Default location in case geocoding fails
+  const defaultLocation = {
     latitude: 33.6844,
     longitude: 73.0479,
   };
 
   useEffect(() => {
-    const fetchMechanicLocation = async (address) => {
-      try {
-        const apiKey = 'f697cb451b7e4329829f1fbf639c1a81';  // Replace with your OpenCage API key
-        const response = await fetch(
-          `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=${apiKey}`
-        );
-        const data = await response.json();
-
-        console.log('Geocoding response:', data);
-
-        if (data && data.results && data.results.length > 0) {
-          const { lat, lng } = data.results[0].geometry;
-          setMechanicLocation({
-            latitude: parseFloat(lat),
-            longitude: parseFloat(lng),
-          });
-        } else {
-          setMechanicLocation(defaultMechanicLocation);
-          console.error('Geocoding failed: No results found');
-        }
-      } catch (error) {
-        setMechanicLocation(defaultMechanicLocation);
-        console.error('Geocoding error:', error);
-      }
-    };
-
     const getLocationPermission = async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           Alert.alert('Permission to access location was denied');
-          setCurrentLocation(defaultMechanicLocation);
-          setRegion({
-            ...defaultMechanicLocation,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          });
+          setCurrentLocation(defaultLocation);
           return;
         }
 
@@ -70,35 +34,21 @@ const ViewMechLocation = ({ route }) => {
         };
 
         setCurrentLocation(currentLoc);
-        setRegion({
-          ...currentLoc,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-
-        if (mechanicLocation) {
-          fetchRoute(currentLoc, mechanicLocation);
-        }
       } catch (error) {
         console.error('Error getting location permission:', error);
-        setCurrentLocation(defaultMechanicLocation);
-        setRegion({
-          ...defaultMechanicLocation,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
+        setCurrentLocation(defaultLocation);
       }
     };
 
-    fetchMechanicLocation(mechlocation);
     getLocationPermission();
-  }, [mechlocation]);
+  }, []);
 
   useEffect(() => {
-    if (currentLocation && mechanicLocation) {
-      fetchRoute(currentLocation, mechanicLocation);
+    if (currentLocation) {
+      fetchRoute(currentLocation, userLocation);
+      fitMapToMarkers(currentLocation, userLocation);
     }
-  }, [currentLocation, mechanicLocation]);
+  }, [currentLocation, userLocation]);
 
   const fetchRoute = async (startLoc, endLoc) => {
     try {
@@ -125,11 +75,38 @@ const ViewMechLocation = ({ route }) => {
       }
     } catch (error) {
       console.error('Error fetching route:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!currentLocation || !mechanicLocation) {
-    return <Text>Loading...</Text>;
+  const fitMapToMarkers = (currentLoc, userLoc) => {
+    const minLat = Math.min(currentLoc.latitude, userLoc.latitude);
+    const maxLat = Math.max(currentLoc.latitude, userLoc.latitude);
+    const minLng = Math.min(currentLoc.longitude, userLoc.longitude);
+    const maxLng = Math.max(currentLoc.longitude, userLoc.longitude);
+
+    const midLat = (minLat + maxLat) / 2;
+    const midLng = (minLng + maxLng) / 2;
+
+    const deltaLat = maxLat - minLat;
+    const deltaLng = maxLng - minLng;
+
+    setRegion({
+      latitude: midLat,
+      longitude: midLng,
+      latitudeDelta: deltaLat * 1.5,
+      longitudeDelta: deltaLng * 1.5,
+    });
+  };
+
+  if (loading || !currentLocation) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   return (
@@ -140,14 +117,18 @@ const ViewMechLocation = ({ route }) => {
         showsUserLocation={true}
         initialRegion={region}
       >
-        <Marker coordinate={mechanicLocation} title="Mechanic Location" />
-        {currentLocation && (
-          <Marker
-            coordinate={currentLocation}
-            title="Vehicle Location"
-            pinColor="green"
+        <Marker
+          coordinate={currentLocation}
+          title="Mechanic Location"
+          description="Mechanic is here"
+        >
+          <Image
+            source={require('../../../../assets/car_224280.png')} // Replace with your image path
+            style={{ width: 50, height: 50 }}
+            resizeMode="contain"
           />
-        )}
+        </Marker>
+        <Marker coordinate={userLocation} title="User Location" pinColor="red" />
         {routeCoordinates.length > 0 && (
           <Polyline
             coordinates={routeCoordinates}
@@ -167,6 +148,11 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
-export default ViewMechLocation;
+export default ViewuserLocation;

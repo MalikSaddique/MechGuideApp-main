@@ -38,6 +38,11 @@ import DeleteAccountScreen from './DrawerScreens/SettingScreens/DeleteAccount.js
 import FAQScreen from './DrawerScreens/FAQsScreen.js';
 import ContactUsScreen from './DrawerScreens/SettingScreens/ContactUsScreen.js';
 import ViewMechLoction from './DrawerScreens/ViewMechDetails/ViewMechLoction.js'
+import MechRating from './DrawerScreens/ViewMechDetails/MechRating.js'
+import FetRatMechSide from './DrawerScreens/FetRatMechSide.js';
+import Skill_and_service from './DrawerScreens/Skill_and_service.js';
+import FetRatingMech from './DrawerScreens/ViewMechDetails/FetRatingMech.js';
+
 import ViewuserLocation from './MechanicScreen/MechanicDashboard/MechanicDrawerScreens/ViewuserLocation.js';
 import { NavigationContainer } from '@react-navigation/native';
 import { faL } from '@fortawesome/free-solid-svg-icons';
@@ -103,6 +108,11 @@ function AppNavigator() {
 
       <Stack.Screen name="ViewMechLoction" component={ViewMechLoction}/>
       <Stack.Screen name="ViewuserLocation" component={ViewuserLocation}/>
+      <Stack.Screen name="MechRating" component={MechRating}/>
+      <Stack.Screen name="FetRatingMech" component={FetRatingMech}/>
+      <Stack.Screen name="FetRatMechSide" component={FetRatMechSide}/>
+      <Stack.Screen name="Skill_and_service" component={Skill_and_service}/>
+
 
 
     </Stack.Navigator>

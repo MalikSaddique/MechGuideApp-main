@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { auth, db } from "../../../firebase/firebase.config";
 import { collection, getDoc, doc, addDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
 import * as Location from 'expo-location';
+import FetRatingMech from './FetRatingMech';
 
 const { width } = Dimensions.get('window');
 
@@ -27,16 +28,12 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
         if (mechanicDoc.exists() && userDoc.exists()) {
           setMechanic(mechanicDoc.data());
           setUserData(userDoc.data());
-          console.log(mechanicId)
-          console.log("userdata", userDoc.data());
         } else {
           console.log('No document!');
         }
     
-        // Fetch data from User_Request_of_services collection for current user
         const requestSnapshot = await getDocs(query(collection(db, "User_Request_of_services"),  where("mechanicId", "==", mechanicId), where("userid", "==", auth.currentUser.uid)));
         const requestData = requestSnapshot.docs.map(doc => doc.data());
-        console.log("Request data:", requestData);
 
         setServices(requestData);
       } catch (error) {
@@ -51,7 +48,6 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
     return <Text>Loading...</Text>; 
   }
 
-  // Handle Request
   const handleRequest = async () => {
     try {
       let location;
@@ -77,7 +73,6 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
       const requestSnapshot = await getDocs(query(collection(db, "User_Request_of_services"), where("mechanicId", "==", mechanicId), where("userid", "==", auth.currentUser.uid)));
       
       if (requestSnapshot.empty) {
-        // No existing request, add a new one
         const docRef = await addDoc(collection(db, "User_Request_of_services"), {
           name: userData.name,
           email: userData.email,
@@ -90,14 +85,12 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
           location: userLocation
         });
 
-        const docId = docRef.id; // Get the ID of the added document
+        const docId = docRef.id;
 
-        // Update the document with its own ID
         await updateDoc(doc(db, "User_Request_of_services", docId), { id: docId });
 
         console.log("Document written with ID: ", docId);
       } else {
-        // Existing request, update it with new location
         const docId = requestSnapshot.docs[0].id;
         await updateDoc(doc(db, "User_Request_of_services", docId), { location: userLocation });
 
@@ -111,14 +104,8 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{mechanic.shopName}</Text>
-      </View>
+  const renderContent = () => {
+    return (
       <View style={styles.detailsContainer}>
         <Text style={styles.shopName}>{mechanic.shopName}</Text>
         <Text style={styles.info}>Services: {mechanic.servicesOffered}</Text>
@@ -129,9 +116,14 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
         {services && services.length > 0 && services[0].status === "pending" ? (
           <Text style={styles.pendingInfo}>Your request is sent to the mechanic.</Text>
         ) : services && services.length > 0 && services[0].status === "accepted" ? (
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ViewMechLoction',{ mechlocation: mechanic.location })}>
-            <Text style={styles.buttonText}>Mechanic's Live Location</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ViewMechLoction', { mechlocation: mechanic.location })}>
+              <Text style={styles.buttonText}>Mechanic's Live Location</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonRating} onPress={() => navigation.navigate('MechRating', { mechanicId: mechanicId })}>
+              <Text style={styles.buttonText}>Service Rating</Text>
+            </TouchableOpacity>
+          </>
         ) : services && services.length > 0 && services[0].status === "rejected" ? (
           <Text style={[styles.info, styles.rejectedText]}>Your request is rejected.</Text>
         ) : (
@@ -140,7 +132,30 @@ const MechanicDetailsScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    );
+  };
+
+  return (
+    <FlatList
+      data={[{ key: 'content' }, { key: 'ratings' }]}
+      renderItem={({ item }) => {
+        if (item.key === 'content') {
+          return renderContent();
+        } else if (item.key === 'ratings') {
+          return <FetRatingMech mechanicId={mechanicId} />;
+        }
+        return null;
+      }}
+      keyExtractor={item => item.key}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{mechanic.shopName}</Text>
+        </View>
+      }
+    />
   );
 };
 
@@ -193,8 +208,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#4CAF50',
     marginVertical: 10,
-    marginBottom: 10,
   },
+  buttonRating:{    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'red',
+    marginVertical: 4,},
   buttonText: {
     fontSize: width * 0.05,
     color: '#FFFFFF',

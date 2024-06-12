@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { auth, db } from "../../firebase/firebase.config";
 import { collection, getDocs } from "firebase/firestore";
@@ -42,24 +42,25 @@ const MechanicsListScreen = ({ navigation }) => {
         data={mechanics}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-            <TouchableOpacity 
+          <TouchableOpacity 
             style={styles.mechanicItem} 
-            onPress={() => navigation.navigate('ViewMechanicsDetail', { mechanicId: item.id })}>
-            <Text style={styles.title}>{item.name} - {item.shopName}</Text>
-            <Text style={styles.details}>Services Offered: {item.servicesOffered}</Text>
-            <Text style={styles.details}>Location: {item.location}</Text>
-            <Text style={styles.details}>Pricing: {item.pricing}</Text>
-            <Text style={styles.details}>Availability: {item.availability ? 'Available' : 'Not Available'}</Text>
-            <View style={styles.actions}>
-              <TouchableOpacity 
-                style={styles.chatButton} 
-                onPress={() => handleChatPress(item.id)}
-              >
-                <Ionicons name="chatbubble-ellipses-outline" size={24} color="#fff" />
-                <Text style={styles.chatButtonText}>Chat</Text>
-              </TouchableOpacity>
+            onPress={() => navigation.navigate('ViewMechanicsDetail', { mechanicId: item.id })}
+          >
+            <View style={styles.mechanicInfo}>
+              <Text style={styles.title}>{item.name} - {item.shopName}</Text>
+              <Text style={styles.details}>Services Offered: {item.servicesOffered}</Text>
+              <Text style={styles.details}>Location: {item.location}</Text>
+              <Text style={styles.details}>Pricing: {item.pricing}</Text>
+              <Text style={styles.details}>Availability: {item.availability ? 'Available' : 'Not Available'}</Text>
             </View>
+            <TouchableOpacity 
+              style={styles.chatButton} 
+              onPress={() => handleChatPress(item.id)}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={24} color="#fff" />
+              <Text style={styles.chatButtonText}>Chat</Text>
             </TouchableOpacity>
+          </TouchableOpacity>
         )}
         contentContainerStyle={styles.listContainer}
       />
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     marginLeft: 20,
     fontWeight: 'bold',
   },
@@ -99,31 +100,37 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mechanicInfo: {
+    flex: 1,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    fontFamily: 'Roboto',
   },
   details: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
+    marginBottom: 2,
+    fontFamily: 'Roboto',
   },
   chatButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF7A00',
     borderRadius: 5,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   chatButtonText: {
     color: '#fff',
     marginLeft: 5,
+    fontFamily: 'Roboto',
   },
 });
 

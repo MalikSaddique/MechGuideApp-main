@@ -116,7 +116,7 @@ const MechanicChatRoom = ({ route }) => {
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerName}>Michael Tony</Text>
+          <Text style={styles.headerName}>Asif khan</Text>
         </View>
         <View style={styles.headerIcons}>
           <Ionicons name="notifications" size={24} color="white" />

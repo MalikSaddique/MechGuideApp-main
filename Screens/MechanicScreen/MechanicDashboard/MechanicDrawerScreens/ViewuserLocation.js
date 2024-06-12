@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, ActivityIndicator,Image } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import polyline from '@mapbox/polyline';
+import { Ionicons } from '@expo/vector-icons'; // Ensure you have @expo/vector-icons installed
 
 const ViewuserLocation = ({ route }) => {
   const { userLocation } = route.params;
@@ -10,6 +12,7 @@ const ViewuserLocation = ({ route }) => {
   const [region, setRegion] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   // Default location in case geocoding fails
   const defaultLocation = {
@@ -111,6 +114,9 @@ const ViewuserLocation = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
       <MapView
         style={styles.map}
         region={region}
@@ -145,7 +151,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 10,
+    backgroundColor: '#000',
+    borderRadius: 10,
+    padding: 10,
+    paddingLeft:20,
+    paddingRight:20,
+    zIndex: 1,
+  },
+    map: {
     ...StyleSheet.absoluteFillObject,
   },
   loadingContainer: {

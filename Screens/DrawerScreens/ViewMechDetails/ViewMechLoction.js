@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import polyline from '@mapbox/polyline';
+import { Ionicons } from '@expo/vector-icons'; // Make sure to install @expo/vector-icons
 
 const ViewMechLocation = ({ route }) => {
   const { mechlocation } = route.params;
@@ -15,6 +17,7 @@ const ViewMechLocation = ({ route }) => {
   });
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [mechanicLocation, setMechanicLocation] = useState(null);
+  const navigation = useNavigation();
 
   // Default mechanic location in case geocoding fails
   const defaultMechanicLocation = {
@@ -134,6 +137,9 @@ const ViewMechLocation = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
       <MapView
         style={styles.map}
         region={region}
@@ -163,6 +169,17 @@ const ViewMechLocation = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 10,
+    backgroundColor: '#000',
+    borderRadius: 10,
+    padding: 10,
+    paddingLeft:20,
+    paddingRight:20,
+    zIndex: 1,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
